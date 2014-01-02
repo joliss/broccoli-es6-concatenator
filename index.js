@@ -3,7 +3,7 @@ module.exports = function (broccoli) {
   var path = require('path')
   var mkdirp = require('mkdirp')
   var ES6Transpiler = require('es6-module-transpiler').Compiler
-  var jsStringEscape = require('js-string-escape')
+  var jsesc = require('jsesc')
 
   ES6ConcatenatorCompiler.prototype = Object.create(broccoli.Compiler.prototype)
   ES6ConcatenatorCompiler.prototype.constructor = ES6ConcatenatorCompiler
@@ -107,10 +107,10 @@ module.exports = function (broccoli) {
   function wrapInEval (fileContents, fileName) {
     // Should pull out copyright comment headers
     // Eventually we want source maps instead of sourceURL
-    return 'eval("' +
-      jsStringEscape(fileContents) +
-      '//# sourceURL=' + jsStringEscape(fileName) +
-      '");\n'
+    return "eval('" +
+      jsesc(fileContents) +
+      "//# sourceURL=" + jsesc(fileName) +
+      "');\n"
   }
 
   return ES6ConcatenatorCompiler
