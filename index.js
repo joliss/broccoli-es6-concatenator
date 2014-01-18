@@ -17,7 +17,7 @@ module.exports = function (broccoli) {
     this.cache = {}
   }
 
-  ES6ConcatenatorCompiler.prototype.compile = function (srcDir, destDir, callback) {
+  ES6ConcatenatorCompiler.prototype.compile = function (srcDir, destDir) {
     var self = this
     var modulesAdded = {}
     var output = []
@@ -47,7 +47,7 @@ module.exports = function (broccoli) {
     fs.writeFileSync(path.join(destDir, this.outputFile), output.join(''))
 
     self.cache = newCache
-    callback()
+    // This method is synchronous, so we don't need to return a promise here
 
     function addModule (moduleName) {
       if (modulesAdded[moduleName]) return
@@ -89,6 +89,8 @@ module.exports = function (broccoli) {
         output.push(cacheObject.output)
         modulesAdded[moduleName] = true
       } catch (err) {
+        // Bug: When a non-existent file is referenced, this is the referenced
+        // file, not the parent
         err.file = modulePath
         throw err
       }
