@@ -38,9 +38,11 @@ module.exports = function (broccoli) {
     }
 
     var legacyFiles = broccoli.helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
+    console.time('all legacy files')
     for (i = 0; i < legacyFiles.length; i++) {
       addLegacyFile(legacyFiles[i])
     }
+    console.timeEnd('all legacy files')
 
     broccoli.helpers.assertAbsolutePaths([this.outputFile])
     mkdirp.sync(path.join(destDir, path.dirname(this.outputFile)))
@@ -101,18 +103,28 @@ module.exports = function (broccoli) {
     }
 
     function addLegacyFile (filePath) {
-      var fileContents = fs.readFileSync(path.join(srcDir, filePath)).toString()
+      console.time('read')
+      var fileContents = fs.readFileSync(path.join(srcDir, filePath), {
+        // encoding: 'utf8'
+      })
+      console.timeEnd('read')
+      console.time('decode')
+      fileContents = fileContents.toString('utf-8')
+      console.timeEnd('decode')
       output.push(wrapInEval(fileContents, filePath))
+      console.error(fileContents.length)
+      console.error()
     }
   }
 
   function wrapInEval (fileContents, fileName) {
     // Should pull out copyright comment headers
     // Eventually we want source maps instead of sourceURL
-    return 'eval("' +
-      jsStringEscape(fileContents) +
-      '//# sourceURL=' + jsStringEscape(fileName) +
-      '");\n'
+    return fileContents
+    // return 'eval("' +
+    //   jsStringEscape(fileContents) +
+    //   '//# sourceURL=' + jsStringEscape(fileName) +
+    //   '");\n'
   }
 
   return ES6ConcatenatorCompiler
