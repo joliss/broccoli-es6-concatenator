@@ -14,7 +14,10 @@ module.exports = function (broccoli) {
       }
     }
 
-    this.cache = {}
+    this.cache = {
+      es6: {},
+      legacy: {}
+    }
   }
 
   ES6ConcatenatorCompiler.prototype.compile = function (srcDir, destDir) {
@@ -23,10 +26,14 @@ module.exports = function (broccoli) {
     var output = []
     // When we are done compiling, we replace this.cache with newCache, so that
     // unused cache entries are garbage-collected
-    var newCache = {}
+    var newCache = {
+      es6: {},
+      legacy: {}
+    }
 
     addLegacyFile(this.loaderFile)
 
+    // This glob tends to be the biggest performance hog
     var inputFiles = broccoli.helpers.multiGlob(this.inputFiles, {cwd: srcDir})
     for (var i = 0; i < inputFiles.length; i++) {
       var inputFile = inputFiles[i]
@@ -54,11 +61,11 @@ module.exports = function (broccoli) {
       if (self.ignoredModules.indexOf(moduleName) !== -1) return
       var i
       var modulePath = moduleName + '.js'
-      var fullPath = path.join(srcDir, modulePath)
+      var fullPath = srcDir + '/' + modulePath
       var imports
       try {
         var statsHash = broccoli.helpers.hashStats(fs.statSync(fullPath), modulePath)
-        var cacheObject = self.cache[statsHash]
+        var cacheObject = self.cache.es6[statsHash]
         if (cacheObject == null) { // cache miss
           var fileContents = fs.readFileSync(fullPath).toString()
           var compiler = new ES6Transpiler(fileContents, moduleName)
@@ -84,7 +91,7 @@ module.exports = function (broccoli) {
             })
           }
         }
-        newCache[statsHash] = cacheObject
+        newCache.es6[statsHash] = cacheObject
         imports = cacheObject.imports
         output.push(cacheObject.output)
         modulesAdded[moduleName] = true
@@ -101,8 +108,17 @@ module.exports = function (broccoli) {
     }
 
     function addLegacyFile (filePath) {
-      var fileContents = fs.readFileSync(path.join(srcDir, filePath)).toString()
-      output.push(wrapInEval(fileContents, filePath))
+      // This function is just slow enough that we benefit from caching
+      var statsHash = broccoli.helpers.hashStats(fs.statSync(srcDir + '/' + filePath), filePath)
+      var cacheObject = self.cache.legacy[statsHash]
+      if (cacheObject == null) { // cache miss
+        var fileContents = fs.readFileSync(srcDir + '/' + filePath, { encoding: 'utf8' })
+        cacheObject = {
+          output: wrapInEval(fileContents, filePath)
+        }
+      }
+      newCache.legacy[statsHash] = cacheObject
+      output.push(cacheObject.output)
     }
   }
 
