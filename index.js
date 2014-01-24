@@ -20,6 +20,16 @@ module.exports = function (broccoli) {
     }
   }
 
+  ES6ConcatenatorCompiler.prototype.setWrapInEval = function (bool) {
+    this._wrapInEval = bool
+    return this
+  }
+
+  ES6ConcatenatorCompiler.prototype.getWrapInEval = function () {
+    // default to true for now
+    return this._wrapInEval == null ? true : this._wrapInEval
+  }
+
   ES6ConcatenatorCompiler.prototype.compile = function (srcDir, destDir) {
     var self = this
     var modulesAdded = {}
@@ -84,8 +94,12 @@ module.exports = function (broccoli) {
               importNode.source.value = path.join(moduleName, '..', importNode.source.value)
             }
           }
+          var compiledModule = compiler.toAMD()
+          if (self.getWrapInEval()) {
+            compiledModule = wrapInEval(compiledModule, modulePath)
+          }
           cacheObject = {
-            output: wrapInEval(compiler.toAMD(), modulePath),
+            output: compiledModule,
             imports: compiler.imports.map(function (importNode) {
               return importNode.source.value
             })
@@ -113,8 +127,11 @@ module.exports = function (broccoli) {
       var cacheObject = self.cache.legacy[statsHash]
       if (cacheObject == null) { // cache miss
         var fileContents = fs.readFileSync(srcDir + '/' + filePath, { encoding: 'utf8' })
+        if (self.getWrapInEval()) {
+          fileContents = wrapInEval(fileContents, filePath)
+        }
         cacheObject = {
-          output: wrapInEval(fileContents, filePath)
+          output: fileContents
         }
       }
       newCache.legacy[statsHash] = cacheObject

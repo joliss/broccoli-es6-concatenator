@@ -27,3 +27,9 @@ compilerCollection.addCompiler(new ES6ConcatenatorCompiler({
   outputFile: '/assets/app.js'
 }));
 ```
+
+### Methods
+
+* `.setWrapInEval(bool)`: Call with `true` or `false` to enable or disable
+  wrapping each module in an `eval` call with a `//# sourceURL` comment.
+  Defaults to true, though this may change in the future.
