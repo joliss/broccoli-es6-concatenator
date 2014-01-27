@@ -1,5 +1,7 @@
 # master
 
+# 0.0.4
+
 * Add `.setWrapInEval` to configure whether to wrap modules in `eval`
 
 # 0.0.3
