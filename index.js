@@ -5,9 +5,10 @@ module.exports = function (broccoli) {
   var ES6Transpiler = require('es6-module-transpiler').Compiler
   var jsStringEscape = require('js-string-escape')
 
-  ES6ConcatenatorCompiler.prototype = Object.create(broccoli.Compiler.prototype)
-  ES6ConcatenatorCompiler.prototype.constructor = ES6ConcatenatorCompiler
-  function ES6ConcatenatorCompiler (options) {
+  ES6Concatenator.prototype = Object.create(broccoli.Transformer.prototype)
+  ES6Concatenator.prototype.constructor = ES6Concatenator
+  function ES6Concatenator(inputTree, options) {
+    this.inputTree = inputTree
     for (var key in options) {
       if (options.hasOwnProperty(key)) {
         this[key] = options[key]
@@ -20,17 +21,17 @@ module.exports = function (broccoli) {
     }
   }
 
-  ES6ConcatenatorCompiler.prototype.setWrapInEval = function (bool) {
+  ES6Concatenator.prototype.setWrapInEval = function (bool) {
     this._wrapInEval = bool
     return this
   }
 
-  ES6ConcatenatorCompiler.prototype.getWrapInEval = function () {
+  ES6Concatenator.prototype.getWrapInEval = function () {
     // default to true for now
     return this._wrapInEval == null ? true : this._wrapInEval
   }
 
-  ES6ConcatenatorCompiler.prototype.compile = function (srcDir, destDir) {
+  ES6Concatenator.prototype.transform = function (srcDir, destDir) {
     var self = this
     var modulesAdded = {}
     var output = []
@@ -148,5 +149,7 @@ module.exports = function (broccoli) {
       '");\n'
   }
 
-  return ES6ConcatenatorCompiler
+  return function (inputTree, options) {
+    return new ES6Concatenator(inputTree, options)
+  }
 }

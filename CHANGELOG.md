@@ -1,5 +1,7 @@
 # master
 
+* Expose new functional syntax
+
 # 0.0.4
 
 * Add `.setWrapInEval` to configure whether to wrap modules in `eval`

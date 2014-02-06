@@ -1,15 +1,15 @@
 # broccoli-es6-concatenator
 
-The `ES6ConcatenatorCompiler` transpiles ES6 modules and concatenates them,
-recursively including modules referenced by `import` statements.
+Transpile ES6 modules and concatenate them, recursively including modules
+referenced by `import` statements.
 
 ## Usage
 
 Note: The API will change in subsequent 0.x versions.
 
 ```js
-var ES6ConcatenatorCompiler = require('broccoli-es6-concatenator')(broccoli);
-compilerCollection.addCompiler(new ES6ConcatenatorCompiler({
+var compileES6 = require('broccoli-es6-concatenator')(broccoli);
+var applicationJs = compileES6(sourceTree, {
   loaderFile: 'loader.js',
   ignoredModules: [
     'resolver'
@@ -21,11 +21,9 @@ compilerCollection.addCompiler(new ES6ConcatenatorCompiler({
     'jquery.js',
     'handlebars.js',
     'ember.js',
-    'ember-data.js',
-    'ember-resolver.js'
   ],
-  outputFile: '/assets/app.js'
-}));
+  outputFile: '/assets/application.js'
+});
 ```
 
 ### Methods
