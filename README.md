@@ -22,12 +22,12 @@ var applicationJs = compileES6(sourceTree, {
     'handlebars.js',
     'ember.js',
   ],
+  wrapInEval: true,
   outputFile: '/assets/application.js'
 });
 ```
 
-### Methods
+### Options
 
-* `.setWrapInEval(bool)`: Call with `true` or `false` to enable or disable
-  wrapping each module in an `eval` call with a `//# sourceURL` comment.
-  Defaults to true, though this may change in the future.
+* `.wrapInEval` (boolean): Enable or disable wrapping each module in an `eval`
+  call with a `//# sourceURL` comment. Defaults to true, though this may change in the future.

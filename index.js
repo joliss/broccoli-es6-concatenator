@@ -23,14 +23,9 @@ function ES6Concatenator(inputTree, options) {
   }
 }
 
-ES6Concatenator.prototype.setWrapInEval = function (bool) {
-  this._wrapInEval = bool
-  return this
-}
-
 ES6Concatenator.prototype.getWrapInEval = function () {
   // default to true for now
-  return this._wrapInEval == null ? true : this._wrapInEval
+  return this.wrapInEval == null ? true : this.wrapInEval
 }
 
 ES6Concatenator.prototype.transform = function (srcDir, destDir) {
