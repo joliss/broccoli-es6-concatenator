@@ -8,7 +8,7 @@ referenced by `import` statements.
 Note: The API will change in subsequent 0.x versions.
 
 ```js
-var compileES6 = require('broccoli-es6-concatenator')(broccoli);
+var compileES6 = require('broccoli-es6-concatenator');
 var applicationJs = compileES6(sourceTree, {
   loaderFile: 'loader.js',
   ignoredModules: [

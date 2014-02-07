@@ -1,5 +1,7 @@
 # master
 
+* Do not require dependency-injecting broccoli
+
 # 0.0.5
 
 * Expose new functional syntax

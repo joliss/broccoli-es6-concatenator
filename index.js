@@ -1,155 +1,152 @@
-module.exports = function (broccoli) {
-  var fs = require('fs')
-  var path = require('path')
-  var mkdirp = require('mkdirp')
-  var ES6Transpiler = require('es6-module-transpiler').Compiler
-  var jsStringEscape = require('js-string-escape')
+var fs = require('fs')
+var path = require('path')
+var mkdirp = require('mkdirp')
+var ES6Transpiler = require('es6-module-transpiler').Compiler
+var jsStringEscape = require('js-string-escape')
+var broccoli = require('broccoli')
 
-  ES6Concatenator.prototype = Object.create(broccoli.Transformer.prototype)
-  ES6Concatenator.prototype.constructor = ES6Concatenator
-  function ES6Concatenator(inputTree, options) {
-    this.inputTree = inputTree
-    for (var key in options) {
-      if (options.hasOwnProperty(key)) {
-        this[key] = options[key]
-      }
-    }
-
-    this.cache = {
-      es6: {},
-      legacy: {}
+module.exports = ES6Concatenator
+ES6Concatenator.prototype = Object.create(broccoli.Transformer.prototype)
+ES6Concatenator.prototype.constructor = ES6Concatenator
+function ES6Concatenator(inputTree, options) {
+  if (!(this instanceof ES6Concatenator)) return new ES6Concatenator(inputTree, options)
+  this.inputTree = inputTree
+  for (var key in options) {
+    if (options.hasOwnProperty(key)) {
+      this[key] = options[key]
     }
   }
 
-  ES6Concatenator.prototype.setWrapInEval = function (bool) {
-    this._wrapInEval = bool
-    return this
+  this.cache = {
+    es6: {},
+    legacy: {}
+  }
+}
+
+ES6Concatenator.prototype.setWrapInEval = function (bool) {
+  this._wrapInEval = bool
+  return this
+}
+
+ES6Concatenator.prototype.getWrapInEval = function () {
+  // default to true for now
+  return this._wrapInEval == null ? true : this._wrapInEval
+}
+
+ES6Concatenator.prototype.transform = function (srcDir, destDir) {
+  var self = this
+  var modulesAdded = {}
+  var output = []
+  // When we are done compiling, we replace this.cache with newCache, so that
+  // unused cache entries are garbage-collected
+  var newCache = {
+    es6: {},
+    legacy: {}
   }
 
-  ES6Concatenator.prototype.getWrapInEval = function () {
-    // default to true for now
-    return this._wrapInEval == null ? true : this._wrapInEval
+  addLegacyFile(this.loaderFile)
+
+  // This glob tends to be the biggest performance hog
+  var inputFiles = broccoli.helpers.multiGlob(this.inputFiles, {cwd: srcDir})
+  for (var i = 0; i < inputFiles.length; i++) {
+    var inputFile = inputFiles[i]
+    if (inputFile.slice(-3) !== '.js') {
+      throw new Error('ES6 file does not end in .js: ' + inputFile)
+    }
+    var moduleName = inputFile.slice(0, -3)
+    addModule(moduleName)
   }
 
-  ES6Concatenator.prototype.transform = function (srcDir, destDir) {
-    var self = this
-    var modulesAdded = {}
-    var output = []
-    // When we are done compiling, we replace this.cache with newCache, so that
-    // unused cache entries are garbage-collected
-    var newCache = {
-      es6: {},
-      legacy: {}
-    }
+  var legacyFiles = broccoli.helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
+  for (i = 0; i < legacyFiles.length; i++) {
+    addLegacyFile(legacyFiles[i])
+  }
 
-    addLegacyFile(this.loaderFile)
+  broccoli.helpers.assertAbsolutePaths([this.outputFile])
+  mkdirp.sync(path.join(destDir, path.dirname(this.outputFile)))
+  fs.writeFileSync(path.join(destDir, this.outputFile), output.join(''))
 
-    // This glob tends to be the biggest performance hog
-    var inputFiles = broccoli.helpers.multiGlob(this.inputFiles, {cwd: srcDir})
-    for (var i = 0; i < inputFiles.length; i++) {
-      var inputFile = inputFiles[i]
-      if (inputFile.slice(-3) !== '.js') {
-        throw new Error('ES6 file does not end in .js: ' + inputFile)
-      }
-      var moduleName = inputFile.slice(0, -3)
-      addModule(moduleName)
-    }
+  self.cache = newCache
+  // This method is synchronous, so we don't need to return a promise here
 
-    var legacyFiles = broccoli.helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
-    for (i = 0; i < legacyFiles.length; i++) {
-      addLegacyFile(legacyFiles[i])
-    }
-
-    broccoli.helpers.assertAbsolutePaths([this.outputFile])
-    mkdirp.sync(path.join(destDir, path.dirname(this.outputFile)))
-    fs.writeFileSync(path.join(destDir, this.outputFile), output.join(''))
-
-    self.cache = newCache
-    // This method is synchronous, so we don't need to return a promise here
-
-    function addModule (moduleName) {
-      if (modulesAdded[moduleName]) return
-      if (self.ignoredModules.indexOf(moduleName) !== -1) return
-      var i
-      var modulePath = moduleName + '.js'
-      var fullPath = srcDir + '/' + modulePath
-      var imports
-      try {
-        var statsHash = broccoli.helpers.hashStats(fs.statSync(fullPath), modulePath)
-        var cacheObject = self.cache.es6[statsHash]
-        if (cacheObject == null) { // cache miss
-          var fileContents = fs.readFileSync(fullPath).toString()
-          var compiler = new ES6Transpiler(fileContents, moduleName)
-          // Resolve relative imports by mutating the compiler's list of import nodes
-          for (i = 0; i < compiler.imports.length; i++) {
-            var importNode = compiler.imports[i]
-            if ((importNode.type !== 'ImportDeclaration' &&
-                 importNode.type !== 'ModuleDeclaration') ||
-              !importNode.source ||
-              importNode.source.type !== 'Literal' ||
-              !importNode.source.value) {
-              throw new Error('Internal error: Esprima import node has unexpected structure')
-            }
-            // Mutate node
-            if (importNode.source.value.slice(0, 1) === '.') {
-              importNode.source.value = path.join(moduleName, '..', importNode.source.value)
-            }
+  function addModule (moduleName) {
+    if (modulesAdded[moduleName]) return
+    if (self.ignoredModules.indexOf(moduleName) !== -1) return
+    var i
+    var modulePath = moduleName + '.js'
+    var fullPath = srcDir + '/' + modulePath
+    var imports
+    try {
+      var statsHash = broccoli.helpers.hashStats(fs.statSync(fullPath), modulePath)
+      var cacheObject = self.cache.es6[statsHash]
+      if (cacheObject == null) { // cache miss
+        var fileContents = fs.readFileSync(fullPath).toString()
+        var compiler = new ES6Transpiler(fileContents, moduleName)
+        // Resolve relative imports by mutating the compiler's list of import nodes
+        for (i = 0; i < compiler.imports.length; i++) {
+          var importNode = compiler.imports[i]
+          if ((importNode.type !== 'ImportDeclaration' &&
+               importNode.type !== 'ModuleDeclaration') ||
+            !importNode.source ||
+            importNode.source.type !== 'Literal' ||
+            !importNode.source.value) {
+            throw new Error('Internal error: Esprima import node has unexpected structure')
           }
-          var compiledModule = compiler.toAMD()
-          if (self.getWrapInEval()) {
-            compiledModule = wrapInEval(compiledModule, modulePath)
-          }
-          cacheObject = {
-            output: compiledModule,
-            imports: compiler.imports.map(function (importNode) {
-              return importNode.source.value
-            })
+          // Mutate node
+          if (importNode.source.value.slice(0, 1) === '.') {
+            importNode.source.value = path.join(moduleName, '..', importNode.source.value)
           }
         }
-        newCache.es6[statsHash] = cacheObject
-        imports = cacheObject.imports
-        output.push(cacheObject.output)
-        modulesAdded[moduleName] = true
-      } catch (err) {
-        // Bug: When a non-existent file is referenced, this is the referenced
-        // file, not the parent
-        err.file = modulePath
-        throw err
-      }
-      for (i = 0; i < imports.length; i++) {
-        var importName = imports[i]
-        addModule(importName)
-      }
-    }
-
-    function addLegacyFile (filePath) {
-      // This function is just slow enough that we benefit from caching
-      var statsHash = broccoli.helpers.hashStats(fs.statSync(srcDir + '/' + filePath), filePath)
-      var cacheObject = self.cache.legacy[statsHash]
-      if (cacheObject == null) { // cache miss
-        var fileContents = fs.readFileSync(srcDir + '/' + filePath, { encoding: 'utf8' })
+        var compiledModule = compiler.toAMD()
         if (self.getWrapInEval()) {
-          fileContents = wrapInEval(fileContents, filePath)
+          compiledModule = wrapInEval(compiledModule, modulePath)
         }
         cacheObject = {
-          output: fileContents
+          output: compiledModule,
+          imports: compiler.imports.map(function (importNode) {
+            return importNode.source.value
+          })
         }
       }
-      newCache.legacy[statsHash] = cacheObject
+      newCache.es6[statsHash] = cacheObject
+      imports = cacheObject.imports
       output.push(cacheObject.output)
+      modulesAdded[moduleName] = true
+    } catch (err) {
+      // Bug: When a non-existent file is referenced, this is the referenced
+      // file, not the parent
+      err.file = modulePath
+      throw err
+    }
+    for (i = 0; i < imports.length; i++) {
+      var importName = imports[i]
+      addModule(importName)
     }
   }
 
-  function wrapInEval (fileContents, fileName) {
-    // Should pull out copyright comment headers
-    // Eventually we want source maps instead of sourceURL
-    return 'eval("' +
-      jsStringEscape(fileContents) +
-      '//# sourceURL=' + jsStringEscape(fileName) +
-      '");\n'
+  function addLegacyFile (filePath) {
+    // This function is just slow enough that we benefit from caching
+    var statsHash = broccoli.helpers.hashStats(fs.statSync(srcDir + '/' + filePath), filePath)
+    var cacheObject = self.cache.legacy[statsHash]
+    if (cacheObject == null) { // cache miss
+      var fileContents = fs.readFileSync(srcDir + '/' + filePath, { encoding: 'utf8' })
+      if (self.getWrapInEval()) {
+        fileContents = wrapInEval(fileContents, filePath)
+      }
+      cacheObject = {
+        output: fileContents
+      }
+    }
+    newCache.legacy[statsHash] = cacheObject
+    output.push(cacheObject.output)
   }
+}
 
-  return function (inputTree, options) {
-    return new ES6Concatenator(inputTree, options)
-  }
+function wrapInEval (fileContents, fileName) {
+  // Should pull out copyright comment headers
+  // Eventually we want source maps instead of sourceURL
+  return 'eval("' +
+    jsStringEscape(fileContents) +
+    '//# sourceURL=' + jsStringEscape(fileName) +
+    '");\n'
 }
