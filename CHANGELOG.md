@@ -1,5 +1,7 @@
 # master
 
+# 0.0.6
+
 * Do not require dependency-injecting broccoli
 * Turn `.setWrapInEval()` into `wrapInEval` option
 
