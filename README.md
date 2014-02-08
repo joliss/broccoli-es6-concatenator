@@ -3,6 +3,12 @@
 Transpile ES6 modules and concatenate them, recursively including modules
 referenced by `import` statements.
 
+## Installation
+
+```bash
+npm install --save broccoli-es6-concatenator
+```
+
 ## Usage
 
 Note: The API will change in subsequent 0.x versions.
