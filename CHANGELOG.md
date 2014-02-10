@@ -1,5 +1,7 @@
 # master
 
+* Use `broccoli-transform` instead of `broccoli.Transformer`
+
 # 0.0.6
 
 * Do not require dependency-injecting broccoli

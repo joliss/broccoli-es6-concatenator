@@ -4,9 +4,10 @@ var mkdirp = require('mkdirp')
 var ES6Transpiler = require('es6-module-transpiler').Compiler
 var jsStringEscape = require('js-string-escape')
 var broccoli = require('broccoli')
+var Transform = require('broccoli-transform')
 
 module.exports = ES6Concatenator
-ES6Concatenator.prototype = Object.create(broccoli.Transformer.prototype)
+ES6Concatenator.prototype = Object.create(Transform.prototype)
 ES6Concatenator.prototype.constructor = ES6Concatenator
 function ES6Concatenator(inputTree, options) {
   if (!(this instanceof ES6Concatenator)) return new ES6Concatenator(inputTree, options)
