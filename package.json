@@ -9,6 +9,15 @@
     "type": "git",
     "url": "https://github.com/joliss/broccoli-es6-concatenator"
   },
+  "keywords": [
+    "broccoli-plugin",
+    "concatenate",
+    "es6",
+    "module",
+    "transpile",
+    "amd",
+    "commonjs"
+  ],
   "dependencies": {
     "es6-module-transpiler": "0.3.6",
     "js-string-escape": "~1.0.0",
