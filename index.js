@@ -11,7 +11,7 @@ ES6Concatenator.prototype = Object.create(Transform.prototype)
 ES6Concatenator.prototype.constructor = ES6Concatenator
 function ES6Concatenator(inputTree, options) {
   if (!(this instanceof ES6Concatenator)) return new ES6Concatenator(inputTree, options)
-  this.inputTree = inputTree
+  Transform.call(this, inputTree)
   for (var key in options) {
     if (options.hasOwnProperty(key)) {
       this[key] = options[key]
