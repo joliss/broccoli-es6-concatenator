@@ -6,7 +6,7 @@ referenced by `import` statements.
 ## Installation
 
 ```bash
-npm install --save broccoli-es6-concatenator
+npm install --save-dev broccoli-es6-concatenator
 ```
 
 ## Usage
