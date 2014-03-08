@@ -53,9 +53,11 @@ ES6Concatenator.prototype.transform = function (srcDir, destDir) {
     addModule(moduleName)
   }
 
-  var legacyFiles = broccoli.helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
-  for (i = 0; i < legacyFiles.length; i++) {
-    addLegacyFile(legacyFiles[i])
+  if (this.legacyFilesToAppend && this.legacyFilesToAppend.length) {
+    var legacyFiles = broccoli.helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
+    for (i = 0; i < legacyFiles.length; i++) {
+      addLegacyFile(legacyFiles[i])
+    }
   }
 
   broccoli.helpers.assertAbsolutePaths([this.outputFile])
@@ -67,7 +69,7 @@ ES6Concatenator.prototype.transform = function (srcDir, destDir) {
 
   function addModule (moduleName) {
     if (modulesAdded[moduleName]) return
-    if (self.ignoredModules.indexOf(moduleName) !== -1) return
+    if (self.ignoredModules && self.ignoredModules.indexOf(moduleName) !== -1) return
     var i
     var modulePath = moduleName + '.js'
     var fullPath = srcDir + '/' + modulePath
