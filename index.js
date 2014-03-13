@@ -3,7 +3,7 @@ var path = require('path')
 var mkdirp = require('mkdirp')
 var ES6Transpiler = require('es6-module-transpiler').Compiler
 var jsStringEscape = require('js-string-escape')
-var broccoli = require('broccoli')
+var helpers = require('broccoli-kitchen-sink-helpers')
 var Transform = require('broccoli-transform')
 
 module.exports = ES6Concatenator
@@ -43,7 +43,7 @@ ES6Concatenator.prototype.transform = function (srcDir, destDir) {
   addLegacyFile(this.loaderFile)
 
   // This glob tends to be the biggest performance hog
-  var inputFiles = broccoli.helpers.multiGlob(this.inputFiles, {cwd: srcDir})
+  var inputFiles = helpers.multiGlob(this.inputFiles, {cwd: srcDir})
   for (var i = 0; i < inputFiles.length; i++) {
     var inputFile = inputFiles[i]
     if (inputFile.slice(-3) !== '.js') {
@@ -53,12 +53,12 @@ ES6Concatenator.prototype.transform = function (srcDir, destDir) {
     addModule(moduleName)
   }
 
-  var legacyFiles = broccoli.helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
+  var legacyFiles = helpers.multiGlob(this.legacyFilesToAppend, {cwd: srcDir})
   for (i = 0; i < legacyFiles.length; i++) {
     addLegacyFile(legacyFiles[i])
   }
 
-  broccoli.helpers.assertAbsolutePaths([this.outputFile])
+  helpers.assertAbsolutePaths([this.outputFile])
   mkdirp.sync(path.join(destDir, path.dirname(this.outputFile)))
   fs.writeFileSync(path.join(destDir, this.outputFile), output.join(''))
 
@@ -73,7 +73,7 @@ ES6Concatenator.prototype.transform = function (srcDir, destDir) {
     var fullPath = srcDir + '/' + modulePath
     var imports
     try {
-      var statsHash = broccoli.helpers.hashStats(fs.statSync(fullPath), modulePath)
+      var statsHash = helpers.hashStats(fs.statSync(fullPath), modulePath)
       var cacheObject = self.cache.es6[statsHash]
       if (cacheObject == null) { // cache miss
         var fileContents = fs.readFileSync(fullPath).toString()
@@ -122,7 +122,7 @@ ES6Concatenator.prototype.transform = function (srcDir, destDir) {
 
   function addLegacyFile (filePath) {
     // This function is just slow enough that we benefit from caching
-    var statsHash = broccoli.helpers.hashStats(fs.statSync(srcDir + '/' + filePath), filePath)
+    var statsHash = helpers.hashStats(fs.statSync(srcDir + '/' + filePath), filePath)
     var cacheObject = self.cache.legacy[statsHash]
     if (cacheObject == null) { // cache miss
       var fileContents = fs.readFileSync(srcDir + '/' + filePath, { encoding: 'utf8' })

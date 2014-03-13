@@ -1,5 +1,7 @@
 # master
 
+* Use broccoli-kitchen-sink-helpers instead of larger broccoli dependency
+
 # 0.1.0
 
 * Update dependencies
