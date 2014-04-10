@@ -117,6 +117,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
         // Bug: When a non-existent file is referenced, this is the referenced
         // file, not the parent
         err.file = modulePath
+        err.message += " in '" + err.file + "'"
         throw err
       }
       for (i = 0; i < imports.length; i++) {
