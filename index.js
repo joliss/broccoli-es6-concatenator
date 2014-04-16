@@ -14,6 +14,14 @@ function ES6Concatenator(inputTree, options) {
 
   this.inputTree = inputTree
 
+  this.moduleNameToPath = function(moduleName) {
+    return moduleName + '.js'
+  }
+
+  this.pathToModuleName = function(path) {
+    return path.slice(0, -3)
+  }
+
   for (var key in options) {
     if (options.hasOwnProperty(key)) {
       this[key] = options[key]
@@ -53,7 +61,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
       if (inputFile.slice(-3) !== '.js') {
         throw new Error('ES6 file does not end in .js: ' + inputFile)
       }
-      var moduleName = inputFile.slice(0, -3)
+      var moduleName = self.pathToModuleName(inputFile)
       addModule(moduleName)
     }
 
@@ -74,7 +82,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
       if (modulesAdded[moduleName]) return
       if (self.ignoredModules && self.ignoredModules.indexOf(moduleName) !== -1) return
       var i
-      var modulePath = moduleName + '.js'
+      var modulePath = self.moduleNameToPath(moduleName)
       var fullPath = srcDir + '/' + modulePath
       var imports
       try {
