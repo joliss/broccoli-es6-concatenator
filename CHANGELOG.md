@@ -1,5 +1,8 @@
 # master
 
+* Added `moduleNameToPath` option.
+* Added `pathToModuleName` option.
+
 # 0.1.4
 
 * Update dependencies
