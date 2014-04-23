@@ -37,3 +37,5 @@ var applicationJs = compileES6(sourceTree, {
 
 * `.wrapInEval` (boolean): Enable or disable wrapping each module in an `eval`
   call with a `//# sourceURL` comment. Defaults to true, though this may change in the future.
+* `.loaderFile` (string | boolean): Path to a loader file as a string. Leave blank or set as false
+  to not use a loader file.
