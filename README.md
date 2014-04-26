@@ -16,7 +16,7 @@ Note: The API will change in subsequent 0.x versions.
 ```js
 var compileES6 = require('broccoli-es6-concatenator');
 var applicationJs = compileES6(sourceTree, {
-  loaderFile: 'loader.js',
+  loaderFile: 'loader.js', //if given the loader file will be included on top of outputFile
   ignoredModules: [
     'resolver'
   ],
