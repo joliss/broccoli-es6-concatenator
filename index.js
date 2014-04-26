@@ -95,7 +95,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
             }
             // Mutate node
             if (importNode.source.value.slice(0, 1) === '.') {
-              importNode.source.value = path.join(moduleName, '..', importNode.source.value)
+              importNode.source.value = path.join(moduleName, '..', importNode.source.value).replace(/\\/g, '/')
             }
           }
           var compiledModule = compiler.toAMD()
