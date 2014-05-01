@@ -1,5 +1,7 @@
 # master
 
+* Make sure that module names use forward slashes on Windows as well
+
 # 0.1.4
 
 * Update dependencies
