@@ -1,5 +1,7 @@
 # master
 
+# 0.1.5
+
 * Make sure that module names use forward slashes on Windows as well
 
 # 0.1.4
