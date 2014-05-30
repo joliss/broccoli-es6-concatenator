@@ -66,7 +66,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
 
     helpers.assertAbsolutePaths([self.outputFile])
     mkdirp.sync(path.join(destDir, path.dirname(self.outputFile)))
-    fs.writeFileSync(path.join(destDir, self.outputFile), output.join(''))
+    fs.writeFileSync(path.join(destDir, self.outputFile), output.join('\n;'))
 
     self.cache = newCache
 
