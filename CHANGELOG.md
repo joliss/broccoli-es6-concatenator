@@ -1,5 +1,7 @@
 # master
 
+# 0.1.6
+
 * Separate concatenated files with `'\n;'`
 
 # 0.1.5
