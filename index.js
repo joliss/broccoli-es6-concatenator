@@ -44,7 +44,9 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
       legacy: {}
     }
 
-    addLegacyFile(self.loaderFile)
+    if (self.loaderFile) {
+      addLegacyFile(self.loaderFile)
+    }
 
     // This glob tends to be the biggest performance hog
     var inputFiles = helpers.multiGlob(self.inputFiles, {cwd: srcDir})
