@@ -1,5 +1,7 @@
 # master
 
+* Change `.loaderFile` option to be optional (shared loaders)
+
 # 0.1.6
 
 * Separate concatenated files with `'\n;'`
