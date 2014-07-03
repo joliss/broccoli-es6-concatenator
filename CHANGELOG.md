@@ -1,5 +1,7 @@
 # master
 
+# 0.1.7
+
 * Change `.loaderFile` option to be optional (shared loaders)
 
 # 0.1.6
