@@ -39,3 +39,6 @@ var applicationJs = compileES6(sourceTree, {
   call with a `//# sourceURL` comment. Defaults to true, though this may change in the future.
 
 * `.loaderFile` (string): When specified prepends the contents of `loaderFile`.
+
+* `.ignoredModules` (array|function): Array: all module names found in the array will be ignored.
+  Function: will be invoked with the moduleName. If true is returned, the module will be ignored.
