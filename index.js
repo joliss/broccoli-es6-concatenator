@@ -72,15 +72,21 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
 
     self.cache = newCache
 
-    function addModule (moduleName) {
+    function addModule (moduleName, sourceFile) {
       if (modulesAdded[moduleName]) return
       if (self.ignoredModules && self.ignoredModules.indexOf(moduleName) !== -1) return
       var i
       var modulePath = moduleName + '.js'
       var fullPath = srcDir + '/' + modulePath
       var imports
+
       try {
         var statsHash = helpers.hashStats(fs.statSync(fullPath), modulePath)
+      } catch(e) {
+        e.file = sourceFile
+        throw e
+      }
+
         var cacheObject = self.cache.es6[statsHash]
         if (cacheObject == null) { // cache miss
           var fileContents = fs.readFileSync(fullPath).toString()
