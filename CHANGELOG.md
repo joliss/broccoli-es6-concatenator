@@ -1,5 +1,7 @@
 # master
 
+# 0.1.8
+
 * Update dependency to follow symlinks correctly
 
 # 0.1.7
