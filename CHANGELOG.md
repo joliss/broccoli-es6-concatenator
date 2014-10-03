@@ -1,5 +1,7 @@
 # master
 
+* Update dependency to follow symlinks correctly
+
 # 0.1.7
 
 * Change `.loaderFile` option to be optional (shared loaders)
