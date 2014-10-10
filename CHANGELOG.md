@@ -1,5 +1,7 @@
 # master
 
+# 0.1.9
+
 * Improve error reporting for import errors
 
 # 0.1.8
