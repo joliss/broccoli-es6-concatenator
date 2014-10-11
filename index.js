@@ -87,6 +87,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
         throw e
       }
 
+      try {
         var cacheObject = self.cache.es6[statsHash]
         if (cacheObject == null) { // cache miss
           var fileContents = fs.readFileSync(fullPath).toString()
@@ -129,7 +130,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
       }
       for (i = 0; i < imports.length; i++) {
         var importName = imports[i]
-        addModule(importName)
+        addModule(importName, modulePath)
       }
     }
 
