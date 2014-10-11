@@ -1,5 +1,7 @@
 # master
 
+* Fix error reporting
+
 # 0.1.9
 
 * Improve error reporting for import errors
