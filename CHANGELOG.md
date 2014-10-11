@@ -1,5 +1,7 @@
 # master
 
+# 0.1.10
+
 * Fix error reporting
 
 # 0.1.9
