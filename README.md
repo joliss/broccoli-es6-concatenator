@@ -3,6 +3,13 @@
 Transpile ES6 modules and concatenate them, recursively including modules
 referenced by `import` statements.
 
+**This plugin is deprecated.** It uses an old version of
+[es6-module-transpiler](https://github.com/esnext/es6-module-transpiler). The
+es6-module-transpiler has since been rewritten in order to correctly reflect
+ES6 module semantics. There is no hope to update broccoli-es6-concatenator to
+the new es6-module-transpiler API. Somebody will have to write a new plugin
+from scratch that works with the new es6-module-transpiler.
+
 ## Installation
 
 ```bash
