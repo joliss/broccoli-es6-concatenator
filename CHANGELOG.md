@@ -1,5 +1,10 @@
 # master
 
+# 0.1.11
+
+* Enable `ignoredModules` to be a function that returns an array. This allows the
+  list of ignored modules to be dynamic.
+
 # 0.1.10
 
 * Fix error reporting
