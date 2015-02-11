@@ -1,5 +1,7 @@
 # master
 
+* Use new `.rebuild` API
+
 # 0.1.10
 
 * Fix error reporting

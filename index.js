@@ -4,11 +4,8 @@ var mkdirp = require('mkdirp')
 var ES6Transpiler = require('es6-module-transpiler').Compiler
 var jsStringEscape = require('js-string-escape')
 var helpers = require('broccoli-kitchen-sink-helpers')
-var Writer = require('broccoli-writer')
 
 module.exports = ES6Concatenator
-ES6Concatenator.prototype = Object.create(Writer.prototype)
-ES6Concatenator.prototype.constructor = ES6Concatenator
 function ES6Concatenator(inputTree, options) {
   if (!(this instanceof ES6Concatenator)) return new ES6Concatenator(inputTree, options)
 
@@ -31,10 +28,9 @@ ES6Concatenator.prototype.getWrapInEval = function () {
   return this.wrapInEval == null ? true : this.wrapInEval
 }
 
-ES6Concatenator.prototype.write = function (readTree, destDir) {
+ES6Concatenator.prototype.rebuild = function () {
   var self = this
 
-  return readTree(this.inputTree).then(function (srcDir) {
     var modulesAdded = {}
     var output = []
     // When we are done compiling, we replace this.cache with newCache, so that
@@ -49,7 +45,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
     }
 
     // This glob tends to be the biggest performance hog
-    var inputFiles = helpers.multiGlob(self.inputFiles, {cwd: srcDir})
+    var inputFiles = helpers.multiGlob(self.inputFiles, {cwd: this.inputPath})
     for (var i = 0; i < inputFiles.length; i++) {
       var inputFile = inputFiles[i]
       if (inputFile.slice(-3) !== '.js') {
@@ -60,15 +56,15 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
     }
 
     if (self.legacyFilesToAppend && self.legacyFilesToAppend.length) {
-      var legacyFiles = helpers.multiGlob(self.legacyFilesToAppend, {cwd: srcDir})
+      var legacyFiles = helpers.multiGlob(self.legacyFilesToAppend, {cwd: this.inputPath})
       for (i = 0; i < legacyFiles.length; i++) {
         addLegacyFile(legacyFiles[i])
       }
     }
 
     helpers.assertAbsolutePaths([self.outputFile])
-    mkdirp.sync(path.join(destDir, path.dirname(self.outputFile)))
-    fs.writeFileSync(path.join(destDir, self.outputFile), output.join('\n;'))
+    mkdirp.sync(path.join(this.outputPath, path.dirname(self.outputFile)))
+    fs.writeFileSync(path.join(this.outputPath, self.outputFile), output.join('\n;'))
 
     self.cache = newCache
 
@@ -77,7 +73,7 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
       if (self.ignoredModules && self.ignoredModules.indexOf(moduleName) !== -1) return
       var i
       var modulePath = moduleName + '.js'
-      var fullPath = srcDir + '/' + modulePath
+      var fullPath = self.inputPath + '/' + modulePath
       var imports
 
       try {
@@ -136,10 +132,10 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
 
     function addLegacyFile (filePath) {
       // This function is just slow enough that we benefit from caching
-      var statsHash = helpers.hashStats(fs.statSync(srcDir + '/' + filePath), filePath)
+      var statsHash = helpers.hashStats(fs.statSync(self.inputPath + '/' + filePath), filePath)
       var cacheObject = self.cache.legacy[statsHash]
       if (cacheObject == null) { // cache miss
-        var fileContents = fs.readFileSync(srcDir + '/' + filePath, { encoding: 'utf8' })
+        var fileContents = fs.readFileSync(self.inputPath + '/' + filePath, { encoding: 'utf8' })
         if (self.getWrapInEval()) {
           fileContents = wrapInEval(fileContents, filePath)
         }
@@ -150,7 +146,6 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
       newCache.legacy[statsHash] = cacheObject
       output.push(cacheObject.output)
     }
-  })
 }
 
 function wrapInEval (fileContents, fileName) {
