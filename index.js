@@ -117,10 +117,26 @@ ES6Concatenator.prototype.write = function (readTree, destDir) {
               importNode.source.value = path.join(moduleName, '..', importNode.source.value).replace(/\\/g, '/')
             }
           }
-          var compiledModule = compiler.toAMD()
-          if (self.getWrapInEval()) {
-            compiledModule = wrapInEval(compiledModule, modulePath)
+
+          function beforeOutputPush(amdFileBody,phase) {
+            var ops = {sourceFile: sourceFile,
+                       moduleName: moduleName,
+                       fullPath: fullPath,
+                       caller: self,
+                       wrapInEval: self.getWrapInEval()};
+
+            var f = self.beforeOutputPushFunc;
+            if (f) return f(amdFileBody,phase,ops);
+            else return res;
           }
+
+          var compiledModule = compiler.toAMD();
+          compiledModule = beforeOutputPush(compiledModule,"beforeEval");
+          if (self.getWrapInEval()) {
+            compiledModule = wrapInEval(compiledModule, modulePath);
+          }
+          compiledModule = beforeOutputPush(compiledModule,"afterEval");
+
           cacheObject = {
             output: compiledModule,
             imports: compiler.imports.map(function (importNode) {
